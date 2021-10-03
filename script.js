@@ -1,36 +1,39 @@
 const delayInMsBetweenRequests = 100
 const requestOptions = {
-  method: 'GET',
-  redirect: 'follow'
+  method: "GET",
+  redirect: "follow"
 }
 const initialTime = new Date()
 var lastEvent = initialTime.getTime()
 
-document.onkeydown = function(event) {
-  const clickedTime = new Date()
-  if (clickedTime.getTime() - lastEvent < delayInMsBetweenRequests) {
-    return
-  }
-  lastEvent = clickedTime.getTime()
+var keyMap = {}
 
-  switch (event.keyCode) {
-    case 37: // Left
-      console.log("Left key is pressed.");
-      break;
-    case 38: // Up
-      fetch("http://localhost:4444/api/drive?up=1", requestOptions)
-        .then(response => response.text())
-        .then(result => console.log(result))
-        .catch(error => console.log('error', error));
-      break;
-    case 39: // Right
-      console.log("Right key is pressed.");
-      break;
-    case 40: // Down
-      console.log("Down key is pressed.");
-      break;
-    case 66: // B
-      console.log("Brake key is pressed.");
-      break;
-  }
+document.onkeydown = document.onkeyup = function(e){
+    e = e || event // to deal with IE
+    // Filter for our controller buttons being pressed
+    if (![37,38,39,40,66].includes(e.keyCode)){
+      return
+    }
+    // Check time since last update so we dont spam requests, let through new presses
+    const clickedTime = new Date()
+    if (clickedTime.getTime() - lastEvent < delayInMsBetweenRequests) {
+      if (keyMap[e.keyCode] === (e.type === "keydown")) {
+        return
+      }
+    }
+    lastEvent = clickedTime.getTime()
+
+    keyMap[e.keyCode] = e.type === "keydown"
+
+    pressedKeyCodes = Object.keys(keyMap).filter(keyCode => keyMap[keyCode])
+    var up = `up=${+ pressedKeyCodes.includes("38")}`
+    var down = `down=${+ pressedKeyCodes.includes("40")}`
+    var left = `left=${+ pressedKeyCodes.includes("37")}`
+    var right = `right=${+ pressedKeyCodes.includes("39")}`
+    var _break = `break=${+ pressedKeyCodes.includes("66")}`
+
+    var driveString = `${up}&${down}&${left}&${right}&${_break}`
+    fetch(`http://localhost:4444/api/drive?${driveString}`, requestOptions)
+      .then(response => response.text())
+      .catch(error => console.log("error", error))
 }
