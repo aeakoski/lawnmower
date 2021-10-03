@@ -1,0 +1,16 @@
+{
+    "rules": {
+        "eqeqeq": "error",
+        "curly": "error",
+        "quotes": ["error", "double"],
+        "no-extra-parens": ["error"],
+        "semi": ["error", "never"]
+    },
+    "parserOptions": {
+        "ecmaVersion": 2017
+    },
+
+    "env": {
+        "es6": true
+    }
+}
