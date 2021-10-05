@@ -2,7 +2,7 @@ const int analogInPin = A0;  // Analog input pin that the potentiometer is attac
 const int motorLeftPin = 9; // Analog output Left motor PWM
 const int motorRightPin = 10; // Analog output Right motor PWM
 const int directionPin = 7;
-const int breakPin = 6;
+//const int breakPin = 6;
 
 int sensorValue = 0;        // value read from the pot
 int outputValue = 0;        // value output to the PWM (analog out)
@@ -10,12 +10,12 @@ int outputValue = 0;        // value output to the PWM (analog out)
 void setup() {
   Serial.begin(9600);
   pinMode(directionPin, OUTPUT);
-  pinMode(breakPin, OUTPUT);
+//  pinMode(breakPin, OUTPUT);
   delay(2);
   digitalWrite(directionPin, LOW);
   analogWrite(motorRightPin, 0);
   analogWrite(motorLeftPin, 0);
-  digitalWrite(breakPin, LOW);
+//  digitalWrite(breakPin, LOW);
 }
 void oldDriver(){
   sensorValue = analogRead(analogInPin);
@@ -43,7 +43,7 @@ void serialDrive() {
   if (Serial.available() <= 0) {
     analogWrite(motorRightPin, 0);
     analogWrite(motorLeftPin, 0);
-    digitalWrite(breakPin, LOW);
+//    digitalWrite(breakPin, LOW);
     return;
   }
 
@@ -57,31 +57,43 @@ void serialDrive() {
       digitalWrite(directionPin, LOW);
       analogWrite(motorRightPin, 1023);
       analogWrite(motorLeftPin, 1023);
-      digitalWrite(breakPin, LOW);
+//      digitalWrite(breakPin, LOW);
       break;
     case 'd':
       digitalWrite(directionPin, HIGH);
       analogWrite(motorRightPin, 1023);
       analogWrite(motorLeftPin, 1023);
-      digitalWrite(breakPin, LOW);
+//      digitalWrite(breakPin, LOW);
       break;
     case 'l':
       digitalWrite(directionPin, LOW);
       analogWrite(motorRightPin, 0);
       analogWrite(motorLeftPin, 1023);
-      digitalWrite(breakPin, LOW);
+//      digitalWrite(breakPin, LOW);
+      break;
+    case 'x':
+      digitalWrite(directionPin, HIGH);
+      analogWrite(motorRightPin, 0);
+      analogWrite(motorLeftPin, 1023);
+//      digitalWrite(breakPin, LOW);
       break;
     case 'r':
       digitalWrite(directionPin, LOW);
       analogWrite(motorRightPin, 1023);
       analogWrite(motorLeftPin, 0);
-      digitalWrite(breakPin, LOW);
+//      digitalWrite(breakPin, LOW);
+      break;
+    case 'y':
+      digitalWrite(directionPin, HIGH);
+      analogWrite(motorRightPin, 1023);
+      analogWrite(motorLeftPin, 0);
+//      digitalWrite(breakPin, LOW);
       break;
     case 'b':
       digitalWrite(directionPin, LOW);
       analogWrite(motorRightPin, 0);
       analogWrite(motorLeftPin, 0);
-      digitalWrite(breakPin, HIGH);
+//      digitalWrite(breakPin, LOW);
       break;
     default:
       analogWrite(motorRightPin, 0);
@@ -96,14 +108,14 @@ void wiggle() {
   digitalWrite(directionPin, LOW);
   analogWrite(motorRightPin, 1023);
   analogWrite(motorLeftPin, 1023);
-  digitalWrite(breakPin, LOW);
+//  digitalWrite(breakPin, LOW);
 
   delay(10000);
 
   digitalWrite(directionPin, HIGH);
   analogWrite(motorRightPin, 1023);
   analogWrite(motorLeftPin, 1023);
-  digitalWrite(breakPin, LOW);
+//  digitalWrite(breakPin, LOW);
 
   delay(10000);
 
@@ -112,4 +124,5 @@ void wiggle() {
 void loop() {
 
   serialDrive();
+  //wiggle();
 }
