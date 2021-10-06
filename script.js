@@ -11,6 +11,44 @@ var keyMap = {}
 document.onkeydown = document.onkeyup = function(e){
     e = e || event // to deal with IE
     // Filter for our controller buttons being pressed
+    if(e.type === "keydown"){
+      switch(e.keyCode){
+        case 37:
+        document.getElementById("l").style.backgroundColor = "blue"
+        break
+        case 38:
+          document.getElementById("u").style.backgroundColor = "blue"
+        break
+        case 39:
+          document.getElementById("r").style.backgroundColor = "blue"
+        break
+        case 40:
+          document.getElementById("d").style.backgroundColor = "blue"
+        break
+        case 66:
+          document.getElementById("b").style.backgroundColor = "blue"
+        break
+      }
+    }
+    if(e.type === "keyup"){
+      switch(e.keyCode){
+        case 37:
+        document.getElementById("l").style.backgroundColor = "white"
+        break
+        case 38:
+          document.getElementById("u").style.backgroundColor = "white"
+        break
+        case 39:
+          document.getElementById("r").style.backgroundColor = "white"
+        break
+        case 40:
+          document.getElementById("d").style.backgroundColor = "white"
+        break
+        case 66:
+        document.getElementById("b").style.backgroundColor = "white"
+        break
+      }
+    }
     if (![37,38,39,40,66].includes(e.keyCode)){
       return
     }
