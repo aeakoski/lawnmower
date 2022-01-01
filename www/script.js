@@ -6,6 +6,8 @@ const requestOptions = {
 const initialTime = new Date()
 var lastEvent = initialTime.getTime()
 
+console.log("Toodeloo")
+
 var keyMap = {}
 
 document.onkeydown = document.onkeyup = function(e){
@@ -71,7 +73,7 @@ document.onkeydown = document.onkeyup = function(e){
     var _break = `break=${+ pressedKeyCodes.includes("66")}`
 
     var driveString = `${up}&${down}&${left}&${right}&${_break}`
-    fetch(`http://localhost:4444/api/drive?${driveString}`, requestOptions)
+    fetch(`/api/drive?${driveString}`, requestOptions)
       .then(response => response.text())
       .catch(error => console.log("error", error))
 }
