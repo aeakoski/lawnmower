@@ -1,14 +1,89 @@
 #!/usr/bin/env python
 import argparse
+import serial
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import time
 import os
 import sys
 import json
 
+serialPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+serialPort.flush()
+if serialPort.isOpen():
+    serialPort.close()
+serialPort.open()
+
 class S(BaseHTTPRequestHandler):
+    def sendCommand(self, command):
+        global serialPort
+        serialPort.write(command.encode())
+
     def driveMower(self, commands):
-        pass
+        if (not commands["up"] and not commands["down"] and not commands["left"] and not commands["right"] and not commands["break"]):
+            ## Dont move
+            print("Dont move 1")
+            return
+
+        if (commands["up"] and commands["down"]):
+            ## Dont move
+            print("Dont move 2")
+            return
+
+        if (commands["down"] and commands["left"] and commands["right"]):
+            ## Move backwards
+            print("Down move 1")
+            sendCommand("d")
+            return
+
+        if (not commands["down"] and not commands["up"] and commands["left"] and commands["right"]):
+            ## Move backwards
+            print("Up move 1")
+            sendCommand("u")
+            return
+
+        if (commands["up"] and commands["left"] and commands["right"]):
+            ## Move forewards
+            print("Up move 2")
+            sendCommand("u")
+            return
+
+        if (commands["down"] and commands["left"]):
+            ## Turn left
+            print("X move 1")
+            sendCommand("x")
+            return
+
+        if (commands["down"] and commands["right"]):
+            ## Turn left
+            print("Y move 1")
+            sendCommand("y")
+            return
+
+        if (commands["up"] and commands["left"] or commands["left"]):
+            ## Turn left
+            print("Left move 1")
+            sendCommand("l")
+            return
+
+        if (commands["up"] and commands["right"] or commands["right"]):
+            ## Turn right
+            print("Right move 1")
+            sendCommand("r")
+            return
+
+        if (commands["up"]):
+            ##  Go forewards
+            print("Up move 3")
+            sendCommand("u")
+            return
+
+        if (commands["down"]):
+            # Go backwards
+            print("Down move 3")
+            sendCommand("d")
+            return
+
+
 
     def _set_headers(self):
         self.send_response(200)
@@ -30,8 +105,8 @@ class S(BaseHTTPRequestHandler):
                     params[x.split("=")[0]] = int(x.split("=")[1])
                 except:
                     continue
+        self.driveMower(params)
         json_object = json.dumps(params, indent = 4)
-        self.driveMower(json_object)
         return json_object.encode("utf8")  # NOTE: must return a bytes object!
 
     def _html(self, path):
