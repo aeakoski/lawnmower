@@ -144,7 +144,7 @@ class S(BaseHTTPRequestHandler):
         self._set_headers()
         self.wfile.write("POST!")
 
-def run(server_class=HTTPServer, handler_class=S, addr="localhost", port=8080):
+def run(server_class=HTTPServer, handler_class=S, addr="0.0.0.0", port=8080):
     server_address = (addr, port)
     httpd = server_class(server_address, handler_class)
     print("Starting http server on", addr, port)
