@@ -49,26 +49,26 @@ class S(BaseHTTPRequestHandler):
 
         if (commands["down"] and commands["left"]):
             ## Turn left
-            print("X move 1")
-            self.sendCommand("x")
+            print("y move 1")
+            self.sendCommand("y")
             return
 
         if (commands["down"] and commands["right"]):
             ## Turn left
-            print("Y move 1")
-            self.sendCommand("y")
+            print("x move 1")
+            self.sendCommand("x")
             return
 
         if (commands["up"] and commands["left"] or commands["left"]):
             ## Turn left
             print("Left move 1")
-            self.sendCommand("l")
+            self.sendCommand("r")
             return
 
         if (commands["up"] and commands["right"] or commands["right"]):
             ## Turn right
             print("Right move 1")
-            self.sendCommand("r")
+            self.sendCommand("l")
             return
 
         if (commands["up"]):
