@@ -7,6 +7,9 @@ import sys
 import json
 
 class S(BaseHTTPRequestHandler):
+    def driveMower(self, commands):
+        pass
+
     def _set_headers(self):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -22,8 +25,13 @@ class S(BaseHTTPRequestHandler):
     def _api(self, path):
         params = {}
         for x in path[path.find("?")+1:].split("&"):
-            params[x.split("=")[0]] = x.split("=")[1]
+            if (x.split("=")[0] in ["up", "down", "left", "right", "break"]):
+                try:
+                    params[x.split("=")[0]] = int(x.split("=")[1])
+                except:
+                    continue
         json_object = json.dumps(params, indent = 4)
+        self.driveMower(json_object)
         return json_object.encode("utf8")  # NOTE: must return a bytes object!
 
     def _html(self, path):
