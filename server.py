@@ -118,10 +118,10 @@ class S(BaseHTTPRequestHandler):
         content = ""
         if path == "" or path == "/":
             path = "index.html"
-        fullPath = "www/" + path
-        try:
-            with open(pathToMowerFiles + fullPath, "r") as target:
-                content = target.read()
+        fullPath = pathToMowerFiles + "www/" + path
+
+        with open(fullPath, "r") as target:
+            content = target.read()
         return content.encode("utf8")  # NOTE: must return a bytes object!
 
     def do_GET(self):
