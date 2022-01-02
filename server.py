@@ -13,6 +13,8 @@ if serialPort.isOpen():
     serialPort.close()
 serialPort.open()
 
+pathToMowerFiles = os.getenv('PATH_TO_MOWER_FILES', "")
+
 class S(BaseHTTPRequestHandler):
     def sendCommand(self, command):
         global serialPort
@@ -110,15 +112,16 @@ class S(BaseHTTPRequestHandler):
         return json_object.encode("utf8")  # NOTE: must return a bytes object!
 
     def _html(self, path):
+        global pathToMowerFiles
         print("Full path: " + path)
         path = path[path.find("/"):]
         content = ""
         if path == "" or path == "/":
             path = "index.html"
         fullPath = "www/" + path
-
-        with open(fullPath, "r") as target:
-            content = target.read()
+        try:
+            with open(pathToMowerFiles + fullPath, "r") as target:
+                content = target.read()
         return content.encode("utf8")  # NOTE: must return a bytes object!
 
     def do_GET(self):
