@@ -110,7 +110,8 @@ class S(BaseHTTPRequestHandler):
         return json_object.encode("utf8")  # NOTE: must return a bytes object!
 
     def _html(self, path):
-        print("Path: " + path)
+        print("Full path: " + path)
+        path = path[path.find("/"):]
         content = ""
         if path == "" or path == "/":
             path = "index.html"
@@ -121,7 +122,7 @@ class S(BaseHTTPRequestHandler):
         return content.encode("utf8")  # NOTE: must return a bytes object!
 
     def do_GET(self):
-        if self.path[0:10] == "/api/drive":
+        if "/api/drive" in self.path:
             res = self._api(self.path)
             self.send_response(200)
             self.end_headers()
