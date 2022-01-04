@@ -31,8 +31,9 @@ sudo crontab -e
 >>> @reboot /usr/local/bin/forever start -c /usr/bin/python3.7 /home/pi/soil-data/serial-ingestion.py
 
 ```
+# Arduino
 
-## Arduino wires
+## Wires
 
 | Color|Pin|
 |---|---|
@@ -42,3 +43,20 @@ sudo crontab -e
 |Gul-grå|5v|
 |(1) Grön-röd|10|
 |(2) Grön-röd|9|
+
+## Serial protocol
+|MSG_LENGTH_BYTE|LEFT_MOTOR_SIGNED_SHORT|RIGHT_MOTOR_SIGNED_SHORT|DIRECTION_BRAKE_BYTE|
+
+#### MSG_LENGTH_BYTE
+One byte representing the total message length
+
+#### LEFT_MOTOR_SIGNED_SHORT
+A short (2 bytes) containing a number between 0-1023. Values higher than 1023 will be interpreted as 1023. Values lower than 0 will be interpreted as 0. The value sets the PWM frequency of the left motor driver.
+
+#### RIGHT_MOTOR_SIGNED_SHORT
+A short (2 bytes) containing a number between 0-1023. Values higher than 1023 will be interpreted as 1023. Values lower than 0 will be interpreted as 0. The value sets the PWM frequency of the left motor driver.
+
+#### DIRECTION_BRAKE_BYTE
+- First bit represents break, on or off
+- Second bit represents direction forwards or backwards
+- Rest six bits are left unused available for future enhancements
