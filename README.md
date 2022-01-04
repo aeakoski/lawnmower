@@ -1,8 +1,13 @@
 # lawnmower
+The purpose of this build is summarized in three milestones:
+
+1. Make a robot lawnmower remote controlled via computer
+2. Make Robot lawn mower autonomous inside an area using a statically mounted camera pointed at a designated mowing area
+3. Cut a Van Gogh
 
 ## Run
 
-### Optional (Good is starting server from other than lawnmower directory)
+### Optional (Mandatory if starting server from different directory)
 
 sudo nano /etc/environment
 
@@ -26,3 +31,14 @@ sudo crontab -e
 >>> @reboot /usr/local/bin/forever start -c /usr/bin/python3.7 /home/pi/soil-data/serial-ingestion.py
 
 ```
+
+## Arduino wires
+
+| Color|Pin|
+|---|---|
+|Brun-lila|7|
+|Grön-lila|6|
+|Lila-grå|Gnd|
+|Gul-grå|5v|
+|(1) Grön-röd|10|
+|(2) Grön-röd|9|
