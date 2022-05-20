@@ -18,7 +18,8 @@ pathToMowerFiles = os.getenv('PATH_TO_MOWER_FILES', "")
 class S(BaseHTTPRequestHandler):
     def sendCommand(self, command):
         global serialPort
-        serialPort.write(command.encode())
+        commandLine = command + '\n'
+        serialPort.write(commandLine.encode())
 
     def driveMower(self, commands):
         if (not commands["up"] and not commands["down"] and not commands["left"] and not commands["right"] and not commands["break"]):
