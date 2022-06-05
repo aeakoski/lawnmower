@@ -10,6 +10,7 @@ import sys
 import datetime
 from pathlib import Path
 
+TOP_SPEED = 450
 
 logFileName = str(Path.home()) + "/lawnmower/logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
 Path(logFileName).touch(exist_ok=True)
@@ -45,31 +46,31 @@ def dataToSerialCommands(data):
         sendSerialCommand(0,0,0)
     elif ('s' in data) and ('a' in data) and ('d' in data):
         # move backwards
-        sendSerialCommand(1023,1023,1)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED,1)
     elif ('s' not in data) and ('w' not in data) and ('a' in data) and ('d' in data):
         # move forewards
-        sendSerialCommand(1023,1023,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
     elif ('w' in data) and ('a' in data) and ('d' in data):
         # move forewards
-        sendSerialCommand(1023,1023,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
     elif ('s' in data) and ('a' in data):
         # move back to the left
-        sendSerialCommand(0,1023,1)
+        sendSerialCommand(0,TOP_SPEED,1)
     elif ('s' in data) and ('d' in data):
         # move back to the right
-        sendSerialCommand(1023,0,1)
+        sendSerialCommand(TOP_SPEED,0,1)
     elif ('w' in data) and ('a' in data) or ('a' in data):
         # move left
-        sendSerialCommand(0,1023,0)
+        sendSerialCommand(0,TOP_SPEED,0)
     elif ('w' in data) and ('d' in data) or ('d' in data):
         # move right
-        sendSerialCommand(1023,0,0)
+        sendSerialCommand(TOP_SPEED,0,0)
     elif ('w' in data):
         # move forewards
-        sendSerialCommand(1023,1023,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
     elif ('s' in data):
         # move back
-        sendSerialCommand(1023,1023,1)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED,1)
     else:
         sendSerialCommand(0,0,0)
 
