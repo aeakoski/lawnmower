@@ -8,10 +8,20 @@ import keyboard
 import time
 
 def client_program():
+    try:
+        h = sys.argv[1]
+    except Exception:
+        h = socket.gethostname()
+        print("Provide hostname as first argument, using default: " + str(h))
+    try:
+        p = int(sys.argv[2])
+    except Exception:
+        p = 5000
+        print("Provide hostname as second argument, using default: " + str(p))
     x = 0
     lastMessage = " "
-    host = socket.gethostname()  # as both code is running on same pc
-    port = 5000  # socket server port number
+    host = h
+    port = p
 
     client_socket = socket.socket()  # instantiate
     client_socket.connect((host, port))  # connect to the server

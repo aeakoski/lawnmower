@@ -70,7 +70,7 @@ def sendSerialCommand(leftMotorValue, rightMotorValue, direction):
 
 def server_program():
     # get the hostname
-    host = socket.gethostname()
+    host = "0.0.0.0"
     port = 5000
 
     server_socket = socket.socket()
