@@ -9,7 +9,7 @@ import os
 import sys
 import datetime
 
-logFileName = "./logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
+logFileName = "~/lawnmower/logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
 
 def log(text):
     global logFileName
