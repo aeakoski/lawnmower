@@ -4,10 +4,14 @@ const int motorRightPin = 10; // Analog output Right motor PWM
 const int directionPin = 7;
 // const int breakPin = 6;
 
+const int NUMBER_OF_LOOPS_BEFORE_APPLYING_EMERGENCY_BREAKS = 3;
+
+int numberOfLoopsWithoutCommands = 0;
+
 int sensorValue = 0;        // value read from the pot
 int outputValue = 0;        // value output to the PWM (analog out)
 
-String inputString = "";         // a string to hold incoming data
+unsigned char inputBytes[5];         // array to hold incoming 5 steering bytes
 boolean stringComplete = false;  // whether the string is complete
 
 int currentState[3][2] = {
@@ -36,40 +40,30 @@ void changeState(int newDirection, int newLeft, int newRight){
 
 void setup() {
   Serial.begin(9600);
-  // reserve 200 bytes for the inputString:
-  inputString.reserve(200);
+  // reserve 200 bytes for the inputBytes:
 
   pinMode(directionPin, OUTPUT);
-//  pinMode(breakPin, OUTPUT);
+  //  pinMode(breakPin, OUTPUT);
   delay(2);
   digitalWrite(directionPin, LOW);
   analogWrite(motorRightPin, 0);
   analogWrite(motorLeftPin, 0);
-//  digitalWrite(breakPin, LOW);
+  //  digitalWrite(breakPin, LOW);
 }
 
 void serialDrive_v2(){
-  // If we dont get any input on serial, stop the mower
-  if (Serial.available() <= 0) {
-    changeState(LOW, 0, 0);
-    return;
-  }
-
-  char msg_len = Serial.read(); // read the incoming byte 'udlrb'
-  Serial.println(msg_len); // print as an ASCII-encoded decimal
-
-  char buffer[msg_len];
-  for (int i = 0; i < msg_len; i++) {
-    buffer[i] = Serial.read();
-  }
-  short left_motor = (buffer[0] << 8) + buffer[1];
-  short right_motor = (buffer[2] << 8) + buffer[3];
+  //Comple first two bytes with value to the left motor
+  unsigned short left_motor = (inputBytes[0] << 8) + inputBytes[1];
+  //Comple second two bytes with value to the right motor
+  unsigned short right_motor = (inputBytes[2] << 8) + inputBytes[3];
   int direction = LOW;
-  if (buffer[4] && 0x2){
-    direction = LOW;
-  } else {
+  if (inputBytes[4] && 0x1){
     direction = HIGH;
+  } else {
+    direction = LOW;
   }
+  Serial.println((unsigned int)inputBytes[0]);
+  Serial.println((unsigned int)inputBytes[1]);
   Serial.println(left_motor);
   Serial.println(right_motor);
   Serial.println(direction);
@@ -77,57 +71,6 @@ void serialDrive_v2(){
   changeState(direction, left_motor, right_motor);
 }
 
-void serialStop(){
-  // If we dont get any input on serial, stop the mower
-    changeState(LOW, 0, 0);
-    return;
-  }
-
-void serialDrive() {
-  // If we dont get any input on serial, stop the mower
-  // if (Serial.available() <= 0) {
-  //   changeState(LOW, 0, 0);
-  //   return;
-  // }
-  //
-  // char driveByte = Serial.read(); // read the incoming byte 'udlrb'
-
-  //switch (driveByte) {
-  Serial.println(inputString); // print as an ASCII-encoded decimal
-  switch (inputString[0]) {
-    case 'u':
-      changeState(LOW, 1023, 1023);
-      break;
-    case 'd':
-      changeState(HIGH, 1023, 1023);
-      //digitalWrite(breakPin, LOW);
-      break;
-    case 'l':
-      changeState(LOW, 1023, 0);
-      //digitalWrite(breakPin, LOW);
-      break;
-    case 'x':
-      changeState(HIGH, 1023, 0);
-      //digitalWrite(breakPin, LOW);
-      break;
-    case 'r':
-      changeState(LOW, 0, 1023);
-      //digitalWrite(breakPin, LOW);
-      break;
-    case 'y':
-      changeState(HIGH, 0, 1023);
-      //digitalWrite(breakPin, LOW);
-      break;
-    case 'b':
-      changeState(LOW, 0, 0);
-      //digitalWrite(breakPin, LOW);
-      break;
-    default:
-      changeState(LOW, 0, 0);
-      break;
-  }
-
-}
 
 void wiggle() {
   digitalWrite(directionPin, LOW);
@@ -141,7 +84,6 @@ void wiggle() {
   analogWrite(motorRightPin, 1023);
   analogWrite(motorLeftPin, 1023);
 //  digitalWrite(breakPin, LOW);
-
   delay(10000);
 
 }
@@ -150,29 +92,39 @@ void loop() {
 
   //wiggle();
   if (stringComplete) {
-    serialDrive();
-    //serialDrive_v2();
+    serialDrive_v2();
     // clear the string:
-    inputString = "";
     stringComplete = false;
+    numberOfLoopsWithoutCommands = 0;
   } else {
-    serialStop();
+    numberOfLoopsWithoutCommands++;
+    if (numberOfLoopsWithoutCommands > NUMBER_OF_LOOPS_BEFORE_APPLYING_EMERGENCY_BREAKS){
+      changeState(LOW, 0, 0);
+    }
   }
-
   delay(150);
-
 }
 
+char bytesRead = 0;
 void serialEvent() {
   while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the inputString:
-    if (inChar == '\n') {
+    unsigned char inChar = Serial.read();
+    if (inChar == '\n' && bytesRead == 5) {
       stringComplete = true;
+      bytesRead = 0;
+      Serial.write("ok\n");
+      return;
+    } else if (bytesRead == 5){
+      bytesRead = 0;
+      Serial.write("no\n");
+      return;
+    } else if (inChar == '\n'){
+      bytesRead = 0;
+      Serial.write("no\n");
       return;
     }
-    inputString += inChar;
+    inputBytes[bytesRead] = inChar;
+    bytesRead++;
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
 

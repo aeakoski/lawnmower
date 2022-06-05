@@ -1,9 +1,9 @@
+#!/usr/bin/env python
 ## CLIENT
 
 import socket
 import tty
 import sys
-import termios
 import keyboard
 import time
 
@@ -16,45 +16,38 @@ def client_program():
     client_socket = socket.socket()  # instantiate
     client_socket.connect((host, port))  # connect to the server
     print("Connected")
+    print("You can now use W-A-S-D keys to controll the mower")
     while True:
         time.sleep(0.01)
 
-        x = " "
-
-        if keyboard.is_pressed('w'):  # if key 'q' is pressed
-            x= "w"
-        elif keyboard.is_pressed('a'):  # if key 'q' is pressed
-            x= "a"
-        elif keyboard.is_pressed('s'):  # if key 'q' is pressed
-            x= "s"
-        elif keyboard.is_pressed('d'):  # if key 'q' is pressed
-            x= "d"
-        elif keyboard.is_pressed('q'):  # if key 'q' is pressed
-            x= "q"
+        x = ""
+        if keyboard.is_pressed('w'):
+            x = x + "w"
+        if keyboard.is_pressed('a'):
+            x = x + "a"
+        if keyboard.is_pressed('s'):
+            x = x + "s"
+        if keyboard.is_pressed('d'):
+            x = x + "d"
+        elif keyboard.is_pressed('q'):
             break
-        print("You pressed", x, end="\r")
 
-        if lastMessage == " " and x == " ":
+        print("                ", end="\r")
+        print("You pressed " + str(x), end="\r")
+
+        if lastMessage == "" and x == "":
             pass
         else:
             client_socket.send(x.encode())  # send message
             lastMessage = x
-
-        # TODO Make it so all new keypresses overwrite the previous one in the cosole
+            time.sleep(0.3)
 
     client_socket.close()  # close the connection
     raise Exception()
 
-
 if __name__ == '__main__':
-    orig_settings = termios.tcgetattr(sys.stdin)
-    tty.setcbreak(sys.stdin)
-
     try:
         client_program()
-
     except Exception as e:
         print("Exiting")
         print(e)
-
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
