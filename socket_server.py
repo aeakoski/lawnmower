@@ -10,7 +10,7 @@ import sys
 import datetime
 from pathlib import Path
 
-TOP_SPEED = 200
+TOP_SPEED = 100
 
 logFileName = str(Path.home()) + "/lawnmower/logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
 Path(logFileName).touch(exist_ok=True)
