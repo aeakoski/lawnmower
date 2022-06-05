@@ -41,6 +41,7 @@ except Exception as e:
 lastSerialSentAt = time.time()
 
 def dataToSerialCommands(data):
+    global TOP_SPEED
     if ('w' in data) and ('s' in data):
         # Dont move
         sendSerialCommand(0,0,0)
