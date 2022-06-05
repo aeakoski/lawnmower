@@ -7,12 +7,35 @@ import socket
 import time
 import os
 import sys
+import datetime
 
-serialPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
-serialPort.flush()
-if serialPort.isOpen():
-    serialPort.close()
-serialPort.open()
+logFileName = "./logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
+
+def log(text):
+    global logFileName
+    t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+    label = "INFO"
+    logRow = str(t) + " " + str(label) + " " + str(text)
+    print(logRow)
+    with open(logFileName, "a") as fp:
+        fp.write(logRow+ "\n")
+
+with open(logFileName, "w") as fp:
+    pass
+
+log("Starting")
+
+try:
+    serialPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+    serialPort.flush()
+    if serialPort.isOpen():
+        log("Closing already open serial connection")
+        serialPort.close()
+    serialPort.open()
+    log("New serial port opened")
+except Exception as e:
+    log(str(e))
+    raise e
 
 lastSerialSentAt = time.time()
 
@@ -65,8 +88,8 @@ def sendSerialCommand(leftMotorValue, rightMotorValue, direction):
     serialPort.write(d)
     serialPort.write("\n".encode())
     lastSerialSentAt = time.time()
-    print("Sent to serial", l, r, d)
-
+    log("Sent to serial (leftmotor, rightmotor, direction ): " + str(l) + ", " + str(r) + ", " + str(d))
+    log(serialPort.read(3))
 
 def server_program():
     # get the hostname
@@ -75,16 +98,16 @@ def server_program():
 
     server_socket = socket.socket()
     server_socket.bind((host, port))
-
     server_socket.listen(1) # N.o paralell clients
+    log("Started webserver: " + str(host) + ":" + str(port))
     while True:
         conn, address = server_socket.accept()  # Accept new connection
-        print("Connection from: " + str(address))
+        log("Got connection from: " + str(address))
         while True:
             data = conn.recv(1024).decode()
             if not data:
                 break
-            print("Recieved from client: " + str(data))
+            print("Datagram recieved: " + str(data))
             dataToSerialCommands(str(data))
         conn.close()
         serialPort.close()

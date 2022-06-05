@@ -62,12 +62,12 @@ void serialDrive_v2(){
   } else {
     direction = LOW;
   }
-  Serial.println((unsigned int)inputBytes[0]);
-  Serial.println((unsigned int)inputBytes[1]);
-  Serial.println(left_motor);
-  Serial.println(right_motor);
-  Serial.println(direction);
-  Serial.println("\n");
+  // Serial.println((unsigned int)inputBytes[0]);
+  // Serial.println((unsigned int)inputBytes[1]);
+  // Serial.println(left_motor);
+  // Serial.println(right_motor);
+  // Serial.println(direction);
+  // Serial.println("\n");
   changeState(direction, left_motor, right_motor);
 }
 
