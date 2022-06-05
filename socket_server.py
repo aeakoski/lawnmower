@@ -8,8 +8,11 @@ import time
 import os
 import sys
 import datetime
+from pathlib import Path
 
-logFileName = "~/lawnmower/logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
+
+logFileName = str(Path.home()) + "/lawnmower/logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
+Path(logFileName).touch(exist_ok=True)
 
 def log(text):
     global logFileName
@@ -17,11 +20,8 @@ def log(text):
     label = "INFO"
     logRow = str(t) + " " + str(label) + " " + str(text)
     print(logRow)
-    with open(logFileName, "a") as fp:
+    with open(logFileName, "a+") as fp:
         fp.write(logRow+ "\n")
-
-with open(logFileName, "w") as fp:
-    pass
 
 log("Starting")
 
