@@ -109,7 +109,7 @@ def server_program():
     server_socket.listen(1) # N.o paralell clients
     log("Started webserver: " + str(host) + ":" + str(port))
     while True:
-        sleep(0.1)
+        time.sleep(0.1)
         conn, address = server_socket.accept()  # Accept new connection
         log("Got connection from: " + str(address))
         while True:
