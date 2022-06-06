@@ -26,6 +26,7 @@ def log(text):
         fp.write(logRow+ "\n")
 
 def openSerialConncetion():
+    global serialPort
     try:
         serialPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
         serialPort.flush()
@@ -98,6 +99,7 @@ def sendSerialCommand(leftMotorValue, rightMotorValue, direction):
         log(serialPort.read(3))
 
 def server_program():
+    global serialPort
     # get the hostname
     host = "0.0.0.0"
     port = 5000
