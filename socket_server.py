@@ -11,7 +11,7 @@ import datetime
 from pathlib import Path
 
 simulatorModeOn = False
-TOP_SPEED = 100
+TOP_SPEED = 140
 logFileName = None
 serialPort = None
 lastSerialSentAt = time.time()
