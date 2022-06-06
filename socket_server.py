@@ -10,10 +10,11 @@ import sys
 import datetime
 from pathlib import Path
 
+simulatorModeOn = False
 TOP_SPEED = 100
-
-logFileName = str(Path.home()) + "/lawnmower/logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
-Path(logFileName).touch(exist_ok=True)
+logFileName = None
+serialPort = None
+lastSerialSentAt = time.time()
 
 def log(text):
     global logFileName
@@ -24,21 +25,18 @@ def log(text):
     with open(logFileName, "a+") as fp:
         fp.write(logRow+ "\n")
 
-log("Starting")
-
-try:
-    serialPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
-    serialPort.flush()
-    if serialPort.isOpen():
-        log("Closing already open serial connection")
-        serialPort.close()
-    serialPort.open()
-    log("New serial port opened")
-except Exception as e:
-    log(str(e))
-    raise e
-
-lastSerialSentAt = time.time()
+def openSerialConncetion():
+    try:
+        serialPort = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+        serialPort.flush()
+        if serialPort.isOpen():
+            log("Closing already open serial connection")
+            serialPort.close()
+        serialPort.open()
+        log("New serial port opened")
+    except Exception as e:
+        log(str(e))
+        raise e
 
 def dataToSerialCommands(data):
     global TOP_SPEED
@@ -79,19 +77,25 @@ def dataToSerialCommands(data):
 def sendSerialCommand(leftMotorValue, rightMotorValue, direction):
     global lastSerialSentAt
     global serialPort
+    global simulatorMode
     l = (leftMotorValue).to_bytes(2, byteorder="big", signed=False)
     r = (rightMotorValue).to_bytes(2, byteorder="big", signed=False)
     d = (direction).to_bytes(1, byteorder="big", signed=False)
     if(time.time() - lastSerialSentAt < 0.2):
         # Make sure not to overflow the serial interface maan!
         return
-    serialPort.write(l)
-    serialPort.write(r)
-    serialPort.write(d)
-    serialPort.write("\n".encode())
+    if not simulatorModeOn:
+        serialPort.write(l)
+        serialPort.write(r)
+        serialPort.write(d)
+        serialPort.write("\n".encode())
+
     lastSerialSentAt = time.time()
     log("Sent to serial (leftmotor, rightmotor, direction ): " + str(l) + ", " + str(r) + ", " + str(d))
-    log(serialPort.read(3))
+    if simulatorModeOn:
+        log("OK\n")
+    else:
+        log(serialPort.read(3))
 
 def server_program():
     # get the hostname
@@ -111,9 +115,26 @@ def server_program():
                 break
             print("Datagram recieved: " + str(data))
             dataToSerialCommands(str(data))
+        log("Lost connection from" + str(address))
         conn.close()
-        serialPort.close()
-
+        if not simulatorModeOn:
+            serialPort.close()
 
 if __name__ == '__main__':
+    try:
+        if sys.argv[1] == "simulator":
+            simulatorModeOn = True
+    except Exception:
+        pass
+
+    if simulatorModeOn:
+        logFileName = str(Path.home()) + "/lawnmower/logs/server-simulator-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
+        Path(logFileName).touch(exist_ok=True)
+        log("Starting in simulator mode ON")
+    else:
+        logFileName = str(Path.home()) + "/lawnmower/logs/server-" + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+".log"
+        Path(logFileName).touch(exist_ok=True)
+        log("Starting")
+        openSerialConncetion()
+
     server_program()
