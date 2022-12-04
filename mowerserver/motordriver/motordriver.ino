@@ -1,7 +1,8 @@
 const int analogInPin = A0;  // Analog input pin that the potentiometer is attached to
 const int motorLeftPin = 9; // Analog output Left motor PWM
 const int motorRightPin = 10; // Analog output Right motor PWM
-const int directionPin = 7;
+const int leftDirectionPin = 7;
+const int rightDirectionPin = 8;
 // const int breakPin = 6;
 
 const int NUMBER_OF_LOOPS_BEFORE_APPLYING_EMERGENCY_BREAKS = 3;
@@ -14,27 +15,32 @@ int outputValue = 0;        // value output to the PWM (analog out)
 unsigned char inputBytes[5];         // array to hold incoming 5 steering bytes
 boolean stringComplete = false;  // whether the string is complete
 
-int currentState[3][2] = {
-  {directionPin, LOW},
+int currentState[4][2] = {
+  {leftDirectionPin, LOW},
+  {rightDirectionPin, LOW},
   {motorLeftPin, 0},
   {motorRightPin, 0}
   };
 
 
-void changeState(int newDirection, int newLeft, int newRight){
+void changeState(int newDirectionLeft, int newDirectionRight, int newLeft, int newRight){
   // To avoid discrepencis in the PWM signal, only write state change
   // to pins if there actually is a state change.
-  if(currentState[0][1] != newDirection){
-    digitalWrite(currentState[0][0], newDirection);
-    currentState[0][1] = newDirection;
+  if(currentState[0][1] != newDirectionLeft){
+    digitalWrite(currentState[0][0], newDirectionLeft);
+    currentState[0][1] = newDirectionLeft;
   }
-  if(currentState[1][1] != newLeft){
-    analogWrite(currentState[1][0], newLeft);
-    currentState[1][1] = newLeft;
+  if(currentState[1][1] != newDirectionRight){
+    analogWrite(currentState[1][0], newDirectionRight);
+    currentState[1][1] = newDirectionRight;
   }
-  if(currentState[2][1] != newRight){
+  if(currentState[2][1] != newLeft){
+    analogWrite(currentState[2][0], newLeft);
+    currentState[2][1] = newLeft;
+  }
+  if(currentState[3][1] != newRight){
     analogWrite(currentState[2][0], newRight);
-    currentState[2][1] = newRight;
+    currentState[3][1] = newRight;
   }
 }
 
@@ -42,10 +48,12 @@ void setup() {
   Serial.begin(9600);
   // reserve 200 bytes for the inputBytes:
 
-  pinMode(directionPin, OUTPUT);
+  pinMode(leftDirectionPin, OUTPUT);
+  pinMode(rightDirectionPin, OUTPUT);
   //  pinMode(breakPin, OUTPUT);
   delay(2);
-  digitalWrite(directionPin, LOW);
+  digitalWrite(leftDirectionPin, LOW);
+  digitalWrite(rightDirectionPin, LOW);
   analogWrite(motorRightPin, 0);
   analogWrite(motorLeftPin, 0);
   //  digitalWrite(breakPin, LOW);
@@ -53,14 +61,20 @@ void setup() {
 
 void serialDrive_v2(){
   //Comple first two bytes with value to the left motor
-  unsigned short left_motor = (inputBytes[0] << 8) + inputBytes[1];
+  unsigned short leftMotorSpeed = (inputBytes[0] << 8) + inputBytes[1];
   //Comple second two bytes with value to the right motor
-  unsigned short right_motor = (inputBytes[2] << 8) + inputBytes[3];
-  int direction = LOW;
+  unsigned short rightMotorSpeed = (inputBytes[2] << 8) + inputBytes[3];
+  int rightMotorDirection = LOW;
+  int leftMotorDirection = LOW;
   if (inputBytes[4] && 0x1){
-    direction = HIGH;
+    rightMotorDirection = HIGH;
   } else {
-    direction = LOW;
+    rightMotorDirection = LOW;
+  }
+  if (inputBytes[4] && 0x10){
+    leftMotorDirection = HIGH;
+  } else {
+    leftMotorDirection = LOW;
   }
   // Serial.println((unsigned int)inputBytes[0]);
   // Serial.println((unsigned int)inputBytes[1]);
@@ -68,7 +82,7 @@ void serialDrive_v2(){
   // Serial.println(right_motor);
   // Serial.println(direction);
   // Serial.println("\n");
-  changeState(direction, left_motor, right_motor);
+  changeState(leftMotorDirection, rightMotorDirection, leftMotorSpeed, rightMotorSpeed);
 }
 
 

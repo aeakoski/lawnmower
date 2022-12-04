@@ -33,10 +33,18 @@ crontab -e
 |---|---|
 |Brun-lila|7|
 |Grön-lila|6|
-|Lila-grå|Gnd|
-|Gul-grå|5v|
+|Lila-grå|5v|
+|Gul-grå|Gnd|
 |(1) Grön-röd|10|
 |(2) Grön-röd|9|
+
+### On the motor driver
+5v       5v output
+EL       Motor enable input (5v)
+Signal   speedometer output
+Z/F      forward/reverse control (5v/GND)
+VR       speed control (0..5v)
+GND      ground
 
 ## Serial protocol
 |LEFT_MOTOR_SIGNED_SHORT|RIGHT_MOTOR_SIGNED_SHORT|DIRECTION_BRAKE_BYTE|
