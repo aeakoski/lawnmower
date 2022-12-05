@@ -125,7 +125,8 @@ def server_program():
             if not data:
                 break
             print("Datagram recieved: " + str(data))
-            dataToSerialCommands(str(data))
+            if len(str(data)) > 0:
+                dataToSerialCommands(str(data)[0])
         log("Lost connection from" + str(address))
         conn.close()
         if not simulatorModeOn:
