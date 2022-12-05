@@ -11,7 +11,7 @@ import datetime
 from pathlib import Path
 
 simulatorModeOn = False
-TOP_SPEED = 140
+TOP_SPEED = 100
 logFileName = None
 serialPort = None
 lastSerialSentAt = time.time()
@@ -41,7 +41,6 @@ def openSerialConncetion():
 
 def dataToSerialCommands(data):
     global TOP_SPEED
-    log("dataToSerialCommands: " + str(data))
     if ('w' in data) and ('s' in data):
         # Dont move
         sendSerialCommand(0,0,0,0)
@@ -86,11 +85,12 @@ def sendSerialCommand(leftMotorValue, rightMotorValue, leftMotorDirection, right
     global lastSerialSentAt
     global serialPort
     global simulatorMode
-
+    log("Entering sendSerialCommand")
     l = (leftMotorValue).to_bytes(2, byteorder="big", signed=False)
     r = (rightMotorValue).to_bytes(2, byteorder="big", signed=False)
     d = ((leftMotorDirection<<1)|rightMotorDirection).to_bytes(1, byteorder="big", signed=False)
     if(time.time() - lastSerialSentAt < 0.2):
+        log("Not sending datagram! Too soon!")
         # Make sure not to overflow the serial interface maan!
         return
     if not simulatorModeOn:
@@ -101,16 +101,22 @@ def sendSerialCommand(leftMotorValue, rightMotorValue, leftMotorDirection, right
 
     lastSerialSentAt = time.time()
     log("Sent to serial (leftmotor, rightmotor, direction ): " + str(l) + ", " + str(r) + ", " + str(d))
-    if simulatorModeOn:
-        log("OK\n")
+    """if simulatorModeOn:
+        log("Y\n")
     else:
-        log(serialPort.read(3))
+        log(serialPort.read(2))"""
 
 def server_program():
     global serialPort
     # get the hostname
     host = "0.0.0.0"
-    port = 5000
+    try:
+        p = int(sys.argv[1])
+    except Exception:
+        p = 5000
+        print("Provide port as first argument, using default: " + str(p))
+
+    port = p
 
     server_socket = socket.socket()
     server_socket.bind((host, port))
@@ -121,13 +127,15 @@ def server_program():
         conn, address = server_socket.accept()  # Accept new connection
         log("Got connection from: " + str(address))
         while True:
-            data = conn.recv(1024).decode()
-            if not data:
+            data = conn.recv(16).decode()
+            if not data: # Connection broken
+                log("Lost connection from" + str(address))
                 break
-            print("Datagram recieved: " + str(data))
-            if len(str(data)) > 0:
-                dataToSerialCommands(str(data)[0])
-        log("Lost connection from" + str(address))
+            log("Datagram recieved: " + str(data))
+            dataToSerialCommands(str(data))
+            log("Datagram handled: " + str(data))
+
+
         conn.close()
         if not simulatorModeOn:
             serialPort.close()

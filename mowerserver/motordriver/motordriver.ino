@@ -5,7 +5,7 @@ const int leftDirectionPin = 7;
 const int rightDirectionPin = 8;
 // const int breakPin = 6;
 
-const int NUMBER_OF_LOOPS_BEFORE_APPLYING_EMERGENCY_BREAKS = 3;
+const int NUMBER_OF_LOOPS_BEFORE_APPLYING_EMERGENCY_BREAKS = 4;
 
 int numberOfLoopsWithoutCommands = 0;
 
@@ -47,6 +47,20 @@ void changeState(int newDirectionLeft, int newDirectionRight, int newLeft, int n
 void setup() {
   Serial.begin(9600);
   // reserve 200 bytes for the inputBytes:
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(500);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(500);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(500);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(500);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(500);
+  digitalWrite(LED_BUILTIN, LOW);
 
   pinMode(leftDirectionPin, OUTPUT);
   pinMode(rightDirectionPin, OUTPUT);
@@ -87,19 +101,19 @@ void serialDrive_v2(){
 
 
 void wiggle() {
+  int speed = 100;
   digitalWrite(leftDirectionPin, LOW);
   digitalWrite(rightDirectionPin, LOW);
-  analogWrite(motorRightPin, 1023);
-  analogWrite(motorLeftPin, 1023);
-//  digitalWrite(breakPin, LOW);
-
+  analogWrite(motorRightPin, speed);
+  analogWrite(motorLeftPin, speed);
+  digitalWrite(LED_BUILTIN, LOW);
   delay(10000);
 
   digitalWrite(leftDirectionPin, HIGH);
   digitalWrite(rightDirectionPin, HIGH);
-  analogWrite(motorRightPin, 1023);
-  analogWrite(motorLeftPin, 1023);
-//  digitalWrite(breakPin, LOW);
+  analogWrite(motorRightPin, speed);
+  analogWrite(motorLeftPin, speed);
+  digitalWrite(LED_BUILTIN, HIGH);
   delay(10000);
 
 }
@@ -107,18 +121,21 @@ void wiggle() {
 void loop() {
 
   //wiggle();
+
   if (stringComplete) {
     serialDrive_v2();
     // clear the string:
     stringComplete = false;
     numberOfLoopsWithoutCommands = 0;
+    digitalWrite(LED_BUILTIN, LOW);
   } else {
     numberOfLoopsWithoutCommands++;
+    delay(150);
     if (numberOfLoopsWithoutCommands > NUMBER_OF_LOOPS_BEFORE_APPLYING_EMERGENCY_BREAKS){
+      digitalWrite(LED_BUILTIN, HIGH);
       changeState(LOW, LOW, 0, 0);
     }
   }
-  delay(150);
 }
 
 char bytesRead = 0;
@@ -136,11 +153,12 @@ void serialEvent() {
       return;
     } else if (inChar == '\n'){
       bytesRead = 0;
-      Serial.write("N\n");
+      Serial.write("E\n");
       return;
     }
     inputBytes[bytesRead] = inChar;
     bytesRead++;
+    delay(5);
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
 
