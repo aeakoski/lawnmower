@@ -86,9 +86,10 @@ def sendSerialCommand(leftMotorValue, rightMotorValue, leftMotorDirection, right
     global lastSerialSentAt
     global serialPort
     global simulatorMode
+
     l = (leftMotorValue).to_bytes(2, byteorder="big", signed=False)
     r = (rightMotorValue).to_bytes(2, byteorder="big", signed=False)
-    d = (leftMotorDirection).to_bytes(1, byteorder="big", signed=False) | (rightMotorDirection).to_bytes(1, byteorder="big", signed=False)
+    d = ((leftMotorDirection<<1)|rightMotorDirection).to_bytes(1, byteorder="big", signed=False)
     if(time.time() - lastSerialSentAt < 0.2):
         # Make sure not to overflow the serial interface maan!
         return
