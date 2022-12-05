@@ -41,47 +41,54 @@ def openSerialConncetion():
 
 def dataToSerialCommands(data):
     global TOP_SPEED
+    log("dataToSerialCommands: " + str(data))
     if ('w' in data) and ('s' in data):
         # Dont move
-        sendSerialCommand(0,0,0)
+        sendSerialCommand(0,0,0,0)
     elif ('s' in data) and ('a' in data) and ('d' in data):
         # move backwards
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,1)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED,1, 1)
     elif ('s' not in data) and ('w' not in data) and ('a' in data) and ('d' in data):
         # move forewards
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 0, 0)
     elif ('w' in data) and ('a' in data) and ('d' in data):
         # move forewards
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 0, 0)
     elif ('s' in data) and ('a' in data):
         # move back to the left
-        sendSerialCommand(0,TOP_SPEED,1)
+        sendSerialCommand(0,TOP_SPEED,1, 1)
     elif ('s' in data) and ('d' in data):
         # move back to the right
-        sendSerialCommand(TOP_SPEED,0,1)
-    elif ('w' in data) and ('a' in data) or ('a' in data):
+        sendSerialCommand(TOP_SPEED, 0, 1, 1)
+    elif ('w' in data) and ('a' in data):
         # move left
-        sendSerialCommand(0,TOP_SPEED,0)
-    elif ('w' in data) and ('d' in data) or ('d' in data):
+        sendSerialCommand(0,TOP_SPEED, 0, 0)
+    elif ('w' in data) and ('d' in data):
         # move right
-        sendSerialCommand(TOP_SPEED,0,0)
+        sendSerialCommand(TOP_SPEED, 0, 0, 0)
+    elif ('a' in data):
+        # move sharp left
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 0, 1)
+    elif ('d' in data):
+        # move sharp right
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 1, 0)
     elif ('w' in data):
         # move forewards
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 0, 0)
     elif ('s' in data):
         # move back
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,1)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 1, 1)
     else:
-        sendSerialCommand(0,0,0)
+        sendSerialCommand(0,0,0,0)
 
 
-def sendSerialCommand(leftMotorValue, rightMotorValue, direction):
+def sendSerialCommand(leftMotorValue, rightMotorValue, leftMotorDirection, rightMotorDirection):
     global lastSerialSentAt
     global serialPort
     global simulatorMode
     l = (leftMotorValue).to_bytes(2, byteorder="big", signed=False)
     r = (rightMotorValue).to_bytes(2, byteorder="big", signed=False)
-    d = (direction).to_bytes(1, byteorder="big", signed=False)
+    d = (leftMotorDirection).to_bytes(1, byteorder="big", signed=False) | (rightMotorDirection).to_bytes(1, byteorder="big", signed=False)
     if(time.time() - lastSerialSentAt < 0.2):
         # Make sure not to overflow the serial interface maan!
         return

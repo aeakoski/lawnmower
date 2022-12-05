@@ -87,14 +87,16 @@ void serialDrive_v2(){
 
 
 void wiggle() {
-  digitalWrite(directionPin, LOW);
+  digitalWrite(leftDirectionPin, LOW);
+  digitalWrite(rightDirectionPin, LOW);
   analogWrite(motorRightPin, 1023);
   analogWrite(motorLeftPin, 1023);
 //  digitalWrite(breakPin, LOW);
 
   delay(10000);
 
-  digitalWrite(directionPin, HIGH);
+  digitalWrite(leftDirectionPin, HIGH);
+  digitalWrite(rightDirectionPin, HIGH);
   analogWrite(motorRightPin, 1023);
   analogWrite(motorLeftPin, 1023);
 //  digitalWrite(breakPin, LOW);
@@ -113,7 +115,7 @@ void loop() {
   } else {
     numberOfLoopsWithoutCommands++;
     if (numberOfLoopsWithoutCommands > NUMBER_OF_LOOPS_BEFORE_APPLYING_EMERGENCY_BREAKS){
-      changeState(LOW, 0, 0);
+      changeState(LOW, LOW, 0, 0);
     }
   }
   delay(150);
@@ -126,15 +128,15 @@ void serialEvent() {
     if (inChar == '\n' && bytesRead == 5) {
       stringComplete = true;
       bytesRead = 0;
-      Serial.write("ok\n");
+      Serial.write("Y\n");
       return;
     } else if (bytesRead == 5){
       bytesRead = 0;
-      Serial.write("no\n");
+      Serial.write("N\n");
       return;
     } else if (inChar == '\n'){
       bytesRead = 0;
-      Serial.write("no\n");
+      Serial.write("N\n");
       return;
     }
     inputBytes[bytesRead] = inChar;
