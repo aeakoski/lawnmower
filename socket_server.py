@@ -8,10 +8,11 @@ import time
 import os
 import sys
 import datetime
+from bitstring import BitArray
 from pathlib import Path
 
 simulatorModeOn = False
-TOP_SPEED = 140
+TOP_SPEED = 100
 logFileName = None
 serialPort = None
 lastSerialSentAt = time.time()
@@ -43,46 +44,54 @@ def dataToSerialCommands(data):
     global TOP_SPEED
     if ('w' in data) and ('s' in data):
         # Dont move
-        sendSerialCommand(0,0,0)
+        sendSerialCommand(0,0,0,0)
     elif ('s' in data) and ('a' in data) and ('d' in data):
         # move backwards
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,1)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED,1, 1)
     elif ('s' not in data) and ('w' not in data) and ('a' in data) and ('d' in data):
         # move forewards
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 0, 0)
     elif ('w' in data) and ('a' in data) and ('d' in data):
         # move forewards
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 0, 0)
     elif ('s' in data) and ('a' in data):
         # move back to the left
-        sendSerialCommand(0,TOP_SPEED,1)
+        sendSerialCommand(0,TOP_SPEED,1, 1)
     elif ('s' in data) and ('d' in data):
         # move back to the right
-        sendSerialCommand(TOP_SPEED,0,1)
-    elif ('w' in data) and ('a' in data) or ('a' in data):
+        sendSerialCommand(TOP_SPEED, 0, 1, 1)
+    elif ('w' in data) and ('a' in data):
         # move left
-        sendSerialCommand(0,TOP_SPEED,0)
-    elif ('w' in data) and ('d' in data) or ('d' in data):
+        sendSerialCommand(0,TOP_SPEED, 0, 0)
+    elif ('w' in data) and ('d' in data):
         # move right
-        sendSerialCommand(TOP_SPEED,0,0)
+        sendSerialCommand(TOP_SPEED, 0, 0, 0)
+    elif ('a' in data):
+        # move sharp left
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 0, 1)
+    elif ('d' in data):
+        # move sharp right
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 1, 0)
     elif ('w' in data):
         # move forewards
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,0)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 0, 0)
     elif ('s' in data):
         # move back
-        sendSerialCommand(TOP_SPEED,TOP_SPEED,1)
+        sendSerialCommand(TOP_SPEED,TOP_SPEED, 1, 1)
     else:
-        sendSerialCommand(0,0,0)
+        sendSerialCommand(0,0,0,0)
 
 
-def sendSerialCommand(leftMotorValue, rightMotorValue, direction):
+def sendSerialCommand(leftMotorValue, rightMotorValue, leftMotorDirection, rightMotorDirection):
     global lastSerialSentAt
     global serialPort
     global simulatorMode
+    log("Entering sendSerialCommand")
     l = (leftMotorValue).to_bytes(2, byteorder="big", signed=False)
     r = (rightMotorValue).to_bytes(2, byteorder="big", signed=False)
-    d = (direction).to_bytes(1, byteorder="big", signed=False)
+    d = ((leftMotorDirection<<1)|rightMotorDirection).to_bytes(1, byteorder="big", signed=False)
     if(time.time() - lastSerialSentAt < 0.2):
+        log("Not sending datagram! Too soon!")
         # Make sure not to overflow the serial interface maan!
         return
     if not simulatorModeOn:
@@ -92,17 +101,23 @@ def sendSerialCommand(leftMotorValue, rightMotorValue, direction):
         serialPort.write("\n".encode())
 
     lastSerialSentAt = time.time()
-    log("Sent to serial (leftmotor, rightmotor, direction ): " + str(l) + ", " + str(r) + ", " + str(d))
-    if simulatorModeOn:
-        log("OK\n")
+    log("Sent to serial (leftmotor, rightmotor, direction ): " + str(BitArray(l).bin) + ", " + str(BitArray(r).bin) + ", " + str(BitArray(d).bin))
+    """if simulatorModeOn:
+        log("Y\n")
     else:
-        log(serialPort.read(3))
+        log(serialPort.read(2))"""
 
 def server_program():
     global serialPort
     # get the hostname
     host = "0.0.0.0"
-    port = 5000
+    try:
+        p = int(sys.argv[1])
+    except Exception:
+        p = 5000
+        print("Provide port as first argument, using default: " + str(p))
+
+    port = p
 
     server_socket = socket.socket()
     server_socket.bind((host, port))
@@ -113,12 +128,15 @@ def server_program():
         conn, address = server_socket.accept()  # Accept new connection
         log("Got connection from: " + str(address))
         while True:
-            data = conn.recv(1024).decode()
-            if not data:
+            data = conn.recv(16).decode()
+            if not data: # Connection broken
+                log("Lost connection from" + str(address))
                 break
-            print("Datagram recieved: " + str(data))
+            log("Datagram recieved: " + str(data))
             dataToSerialCommands(str(data))
-        log("Lost connection from" + str(address))
+            log("Datagram handled: " + str(data))
+
+
         conn.close()
         if not simulatorModeOn:
             serialPort.close()
