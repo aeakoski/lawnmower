@@ -8,6 +8,7 @@ import time
 import os
 import sys
 import datetime
+from bitstring import BitArray
 from pathlib import Path
 
 simulatorModeOn = False
@@ -100,7 +101,7 @@ def sendSerialCommand(leftMotorValue, rightMotorValue, leftMotorDirection, right
         serialPort.write("\n".encode())
 
     lastSerialSentAt = time.time()
-    log("Sent to serial (leftmotor, rightmotor, direction ): " + str(l) + ", " + str(r) + ", " + str(d))
+    log("Sent to serial (leftmotor, rightmotor, direction ): " + str(BitArray(l).bin) + ", " + str(BitArray(r).bin) + ", " + str(BitArray(d).bin))
     """if simulatorModeOn:
         log("Y\n")
     else:

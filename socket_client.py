@@ -32,7 +32,7 @@ def client_program():
         p = int(sys.argv[2])
     except Exception:
         p = 5000
-        print("Provide hostname as second argument, using default: " + str(p))
+        print("Provide port as second argument, using default: " + str(p))
     x = 0
     lastMessage = " "
     host = h

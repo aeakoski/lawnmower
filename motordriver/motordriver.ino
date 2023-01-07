@@ -17,7 +17,7 @@ boolean stringComplete = false;  // whether the string is complete
 
 int currentState[4][2] = {
   {leftDirectionPin, LOW},
-  {rightDirectionPin, LOW},
+  {rightDirectionPin, HIGH}, // Since motor is mirored, direction needs to be mirrored
   {motorLeftPin, 0},
   {motorRightPin, 0}
   };
@@ -31,7 +31,7 @@ void changeState(int newDirectionLeft, int newDirectionRight, int newLeft, int n
     currentState[0][1] = newDirectionLeft;
   }
   if(currentState[1][1] != newDirectionRight){
-    analogWrite(currentState[1][0], newDirectionRight);
+    digitalWrite(currentState[1][0], !newDirectionRight); // Since motor is mirored, direction needs to be mirrored
     currentState[1][1] = newDirectionRight;
   }
   if(currentState[2][1] != newLeft){
@@ -39,7 +39,7 @@ void changeState(int newDirectionLeft, int newDirectionRight, int newLeft, int n
     currentState[2][1] = newLeft;
   }
   if(currentState[3][1] != newRight){
-    analogWrite(currentState[2][0], newRight);
+    analogWrite(currentState[3][0], newRight);
     currentState[3][1] = newRight;
   }
 }
@@ -64,7 +64,9 @@ void setup() {
 
   pinMode(leftDirectionPin, OUTPUT);
   pinMode(rightDirectionPin, OUTPUT);
-  //  pinMode(breakPin, OUTPUT);
+  pinMode(motorLeftPin, OUTPUT);
+  pinMode(motorRightPin, OUTPUT);
+  
   delay(2);
   digitalWrite(leftDirectionPin, LOW);
   digitalWrite(rightDirectionPin, LOW);
@@ -75,27 +77,30 @@ void setup() {
 
 void serialDrive_v2(){
   //Comple first two bytes with value to the left motor
-  unsigned short leftMotorSpeed = (inputBytes[0] << 8) + inputBytes[1];
+  unsigned short leftMotorSpeed = (inputBytes[0] << 8) | inputBytes[1];
   //Comple second two bytes with value to the right motor
-  unsigned short rightMotorSpeed = (inputBytes[2] << 8) + inputBytes[3];
+  unsigned short rightMotorSpeed = (inputBytes[2] << 8) | inputBytes[3];
   int rightMotorDirection = LOW;
   int leftMotorDirection = LOW;
-  if (inputBytes[4] && 0x1){
+  if ((inputBytes[4] == 1) | (inputBytes[4] == 3)){
     rightMotorDirection = HIGH;
   } else {
     rightMotorDirection = LOW;
   }
-  if (inputBytes[4] && 0x10){
+  if ((inputBytes[4] == 3) | (inputBytes[4] == 2)){
     leftMotorDirection = HIGH;
   } else {
     leftMotorDirection = LOW;
   }
-  // Serial.println((unsigned int)inputBytes[0]);
-  // Serial.println((unsigned int)inputBytes[1]);
+  Serial.println((unsigned int)inputBytes[0]);
+  Serial.println((unsigned int)inputBytes[1]);
+  Serial.println((unsigned int)inputBytes[2]);
+  Serial.println((unsigned int)inputBytes[3]);
+  Serial.println((unsigned int)inputBytes[4]);
   // Serial.println(left_motor);
   // Serial.println(right_motor);
   // Serial.println(direction);
-  // Serial.println("\n");
+  Serial.println("\n");
   changeState(leftMotorDirection, rightMotorDirection, leftMotorSpeed, rightMotorSpeed);
 }
 
